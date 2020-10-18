@@ -9,20 +9,12 @@ import android.widget.TextView
 import java.lang.NumberFormatException
 import kotlinx.android.synthetic.main.activity_main.*
 
-private const val STATE_PENDING_OPERATION = "PendingOperation"
-private const val STATE_OPERAND1 = "Operand1"
-private const val STATE_OPERAND1_STORED = "Operand1_Stored"
-
 class MainActivity : AppCompatActivity() {
 
 //    private lateinit var result: EditText
 //    private lateinit var newNumber: EditText // allows init on onCreate method, avoids nullable
 //    private val displayOperation by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.operation) } // lazy delegation,
     // lazy function is thread safe, it is only called once from multiple threads
-
-    // Variables to hold the operands and types of calculation
-    private var operand1: Double? = null
-    private var pendingOperation = "="
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         buttonMinus.setOnClickListener(opListener)
         buttonPlus.setOnClickListener(opListener)
 
-        buttonNeg.setOnClickListener { view ->
+        buttonNeg.setOnClickListener {
             val value = newNumber.text.toString()
             if (value.isEmpty()) {
                 newNumber.setText("-")
@@ -101,52 +93,5 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun performOperation(value: Double, operation: String) {
-        if (operand1 == null) {
-            operand1 = value
-        } else {
-            if (pendingOperation == "=") {
-                pendingOperation = operation
-            }
-
-            when (pendingOperation) {
-                "=" -> operand1 = value
-                "/" -> operand1 = if (value == 0.0) {
-                    Double.NaN // handle attempt to divide by 0
-                } else {
-                    operand1!! / value
-                }
-                "*" -> operand1 = operand1!! * value // bang bang operator
-                "-" -> operand1 = operand1!! - value
-                "+" -> operand1 = operand1!! + value
-            }
-        }
-        result.setText(operand1.toString())
-        newNumber.setText("")
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        if (operand1 != null) {
-            outState.putDouble(STATE_OPERAND1, operand1!!) // '?' safe call operator
-            outState.putBoolean(STATE_OPERAND1_STORED, true)
-        }
-        outState.putString(STATE_PENDING_OPERATION, pendingOperation)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState) // CONTROL + J for documentation
-
-        operand1 = if (savedInstanceState.getBoolean(STATE_OPERAND1_STORED, false)) {
-            savedInstanceState.getDouble(STATE_OPERAND1)
-        } else {
-            null
-        }
-
-        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION)!!
-        operation.text = pendingOperation
     }
 }
