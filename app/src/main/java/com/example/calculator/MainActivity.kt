@@ -6,8 +6,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import java.lang.NumberFormatException
 import kotlinx.android.synthetic.main.activity_main.*
+
+//private const val STATE_PENDING_OPERATION = "PendingOperation"
+//private const val STATE_OPERAND1 = "Operand1"
+//private const val STATE_OPERAND1_STORED = "Operand1_Stored"
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,6 +25,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val viewModel = ViewModelProviders.of(this).get(CalculatorViewModel::class.java)
+        viewModel.result.observe(this, Observer<String> { stringResult -> result.setText(stringResult) })
+        viewModel.newNumber.observe(this, Observer<String> { stringNumber -> newNumber.setText(stringNumber) })
+        viewModel.operation.observe(this, Observer<String> { stringOperation -> operation.text = stringOperation })
 
 //        result = findViewById(R.id.result)
 //        newNumber = findViewById(R.id.newNumber)
@@ -44,8 +55,9 @@ class MainActivity : AppCompatActivity() {
 ////        val buttonPlus = findViewById<Button>(R.id.buttonPlus)
 
         val listener = View.OnClickListener { v ->
-            val b = v as Button
-            newNumber.append(b.text)
+//            val b = v as Button
+//            newNumber.append(b.text)
+            viewModel.digitPressed((v as Button).text.toString())
         }
 
         button0.setOnClickListener(listener)
@@ -61,15 +73,7 @@ class MainActivity : AppCompatActivity() {
         buttonDot.setOnClickListener(listener)
 
         val opListener = View.OnClickListener { v ->
-            val op = (v as Button).text.toString()
-            try {
-                val value = newNumber.text.toString().toDouble()
-                performOperation(value, op)
-            } catch (e: NumberFormatException) {
-                newNumber.setText("")
-            }
-            pendingOperation = op
-            operation.text = pendingOperation
+            viewModel.operandPressed((v as Button).text.toString())
         }
 
         buttonEquals.setOnClickListener(opListener)
@@ -79,19 +83,30 @@ class MainActivity : AppCompatActivity() {
         buttonPlus.setOnClickListener(opListener)
 
         buttonNeg.setOnClickListener {
-            val value = newNumber.text.toString()
-            if (value.isEmpty()) {
-                newNumber.setText("-")
-            } else {
-                try {
-                    var doubleValue = value.toDouble()
-                    doubleValue *= -1
-                    newNumber.setText(doubleValue.toString())
-                } catch (e: NumberFormatException) {
-                    // newNumber was "-" or ".", so clear it
-                    newNumber.setText("")
-                }
-            }
+            viewModel.negPressed()
         }
     }
+
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
+//
+//        if (operand1 != null) {
+//            outState.putDouble(STATE_OPERAND1, operand1!!) // '?' safe call operator
+//            outState.putBoolean(STATE_OPERAND1_STORED, true)
+//        }
+//        outState.putString(STATE_PENDING_OPERATION, pendingOperation)
+//    }
+//
+//    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+//        super.onRestoreInstanceState(savedInstanceState) // CONTROL + J for documentation
+//
+//        operand1 = if (savedInstanceState.getBoolean(STATE_OPERAND1_STORED, false)) {
+//            savedInstanceState.getDouble(STATE_OPERAND1)
+//        } else {
+//            null
+//        }
+//
+//        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION)!!
+//        operation.text = pendingOperation
+//    }
 }
