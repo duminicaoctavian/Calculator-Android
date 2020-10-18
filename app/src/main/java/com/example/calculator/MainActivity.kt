@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+//        val viewModel = ViewModelProviders.of(this).get(BigDecimalViewModel::class.java)
         val viewModel = ViewModelProviders.of(this).get(CalculatorViewModel::class.java)
         viewModel.stringResult.observe(this, Observer<String> { stringResult -> result.setText(stringResult) })
         viewModel.stringNewNumber.observe(this, Observer<String> { stringNumber -> newNumber.setText(stringNumber) })
